@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class celulas : MonoBehaviour
+public class Celulas : MonoBehaviour
 {
 
-    Manager manager;
+    GameManager gameManager;
     Ray ray;
     RaycastHit hit;
 
@@ -14,7 +14,7 @@ public class celulas : MonoBehaviour
 
     void Start()
     {
-        manager = GameObject.Find("Manager").GetComponent<GameManager>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         hitColor[0] = gameObject.GetComponent<MeshRenderer>().material.color;
         hitColor[1] = gameObject.GetComponent<MeshRenderer>().material.color;
     }
@@ -40,11 +40,6 @@ public class celulas : MonoBehaviour
         {
             missileHit = true;
         }
-        else if (collision.gameObject.CompareTag("EnemyMissile"))
-        {
-            hitColor[0] = new Color32(38, 57, 76, 255);
-            GetComponent<Renderer>().material.color = hitColor[0];
-        }
 
     }
 
@@ -57,4 +52,8 @@ public class celulas : MonoBehaviour
     {
         GetComponent<Renderer>().material.color = hitColor[colorIndex];
     }
+
+
+
+
 }

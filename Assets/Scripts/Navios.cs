@@ -4,94 +4,108 @@ using UnityEngine;
 
 public class Navios : MonoBehaviour
 {
+    public float xOffset = 0; // Offset horizontal
+    public float zOffset = 0; // Offset vertical
+    private float nextZRotation = 90f; // Próximo ângulo de rotação
+    private GameObject clickedTile; // Célula clicada
+    public int shipSize; // Tamanho do navio
+    private int hitCount = 0; // Contagem de acertos no navio
 
-    public float xOffset = 0;
-    public float zOffset = 0;
-    private float nextZRotation = 90f;
-    private GameObject clickedTile;
-    int hitCount = 0;
-    public int shipSize;
+    private Material[] allMaterials; // Materiais do navio
+    private List<GameObject> touchTiles = new List<GameObject>(); // Células em contato
+    private List<Color> allColors = new List<Color>(); // Cores originais dos materiais
 
-    private Material[] allMaterials;
-
-    List<GameObject> touchTiles = new List<GameObject>();
-    List<Color> allColors = new List<Color>();
-
-    private void Start()
+    void Start()
     {
         allMaterials = GetComponent<Renderer>().materials;
-        for (int i = 0; i < allMaterials.Length; i++)
-            allColors.Add(allMaterials[i].color);
+        foreach (var material in allMaterials)
+        {
+            allColors.Add(material.color);
+        }
     }
+
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Tile"))
+        if (collision.gameObject.CompareTag("Celula"))
         {
-            touchTiles.Add(collision.gameObject);
+            // Adiciona as células tocadas à lista
+            if (!touchTiles.Contains(collision.gameObject))
+            {
+                touchTiles.Add(collision.gameObject);
+            }
         }
     }
 
     public void ClearTileList()
     {
-        touchTiles.Clear();
+        touchTiles.Clear(); // Limpa a lista de células tocadas
     }
-
 
     public Vector3 GetOffsetVec(Vector3 tilePos)
     {
+        // Retorna a posição ajustada com os offsets
         return new Vector3(tilePos.x + xOffset, 2, tilePos.z + zOffset);
     }
 
     public void RotateShip()
     {
         if (clickedTile == null) return;
+
         touchTiles.Clear();
         transform.localEulerAngles += new Vector3(0, 0, nextZRotation);
-        nextZRotation *= -1;
+        nextZRotation *= -1; // Alterna a rotação entre 90° e -90°
+
+        // Ajusta os offsets para refletir a nova orientação
         float temp = xOffset;
         xOffset = zOffset;
         zOffset = temp;
+
+        // Reposiciona o navio com base na nova rotação
         SetPosition(clickedTile.transform.position);
     }
 
     public void SetPosition(Vector3 newVec)
     {
+        // Reposiciona o navio em relação à célula clicada
         ClearTileList();
         transform.localPosition = new Vector3(newVec.x + xOffset, 2, newVec.z + zOffset);
     }
 
     public void SetClickedTile(GameObject tile)
     {
+        // Define a célula clicada para posicionamento
         clickedTile = tile;
     }
 
     public bool OnGameBoard()
     {
+        // Verifica se o navio está posicionado corretamente no tabuleiro
         return touchTiles.Count == shipSize;
     }
 
     public bool HitCheckSank()
     {
+        // Incrementa a contagem de acertos e verifica se o navio foi afundado
         hitCount++;
-        return shipSize <= hitCount;
+        return hitCount >= shipSize;
     }
 
     public void FlashColor(Color tempColor)
     {
-        foreach (Material mat in allMaterials)
+        // Altera a cor do navio temporariamente para indicar um evento (ex.: acerto)
+        foreach (var material in allMaterials)
         {
-            mat.color = tempColor;
+            material.color = tempColor;
         }
-        Invoke("ResetColor", 0.5f);
+        Invoke("ResetColor", 0.5f); // Reseta a cor após 0.5s
     }
 
     private void ResetColor()
     {
-        int i = 0;
-        foreach (Material mat in allMaterials)
+        // Restaura a cor original dos materiais
+        for (int i = 0; i < allMaterials.Length; i++)
         {
-            mat.color = allColors[i++];
+            allMaterials[i].color = allColors[i];
         }
     }
-
 }
